@@ -47,14 +47,15 @@ import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 
 import org.apache.aries.jmx.JMXThreadFactory;
 import org.apache.aries.jmx.Logger;
 import org.apache.aries.jmx.codec.BundleData;
-import org.apache.aries.jmx.codec.BundleEventData;
 import org.apache.aries.jmx.codec.BundleData.Header;
+import org.apache.aries.jmx.codec.BundleEventData;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -67,7 +68,7 @@ import org.osgi.service.startlevel.StartLevel;
 /**
  * Implementation of <code>BundleStateMBean</code> which emits JMX <code>Notification</code> on <code>Bundle</code>
  * state changes
- * 
+ *
  * @version $Rev$ $Date$
  */
 public class BundleState extends NotificationBroadcasterSupport implements BundleStateMBean, MBeanRegistration {
@@ -257,6 +258,17 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
         return isBundleRequiredByOthers(bundle, packageAdmin);
     }
 
+
+
+    public CompositeData getBundle(long id) throws IOException {
+        Bundle bundle = bundleContext.getBundle(id);
+        if (bundle == null)
+            return null;
+
+        BundleData data = new BundleData(bundleContext, bundle, packageAdmin, startLevel);
+        return data.toCompositeData();
+    }
+
     /**
      * @see org.osgi.jmx.framework.BundleStateMBean#listBundles()
      */
@@ -266,7 +278,7 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
         if (containerBundles != null) {
             for (Bundle containerBundle : containerBundles) {
                 bundleDatas.add(new BundleData(bundleContext, containerBundle, packageAdmin, startLevel));
-            } 
+            }
         }
         TabularData bundleTable = new TabularDataSupport(BUNDLES_TYPE);
         for (BundleData bundleData : bundleDatas) {
@@ -357,10 +369,10 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
             }
             catch (Exception e) {
                // ignore
-            }  
+            }
         }
         if (eventDispatcher != null) {
-            eventDispatcher.shutdown(); 
+            eventDispatcher.shutdown();
         }
     }
 
