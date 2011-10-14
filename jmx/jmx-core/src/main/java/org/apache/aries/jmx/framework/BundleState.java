@@ -134,7 +134,7 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
 
     public String getHeader(long bundleId, String key) throws IOException {
         Bundle bundle = resolveBundle(bundleContext, bundleId);
-        return (String) bundle.getHeaders().get(key);
+        return bundle.getHeaders().get(key);
     }
 
     /**
@@ -281,20 +281,6 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
      */
     public TabularData listBundles() throws IOException {
         return listBundles(BundleStateMBean.BUNDLE_TYPE.keySet());
-        /*
-        Bundle[] containerBundles = bundleContext.getBundles();
-        List<BundleData> bundleDatas = new ArrayList<BundleData>();
-        if (containerBundles != null) {
-            for (Bundle containerBundle : containerBundles) {
-                bundleDatas.add(new BundleData(bundleContext, containerBundle, packageAdmin, startLevel));
-            }
-        }
-        TabularData bundleTable = new TabularDataSupport(BUNDLES_TYPE);
-        for (BundleData bundleData : bundleDatas) {
-            bundleTable.put(bundleData.toCompositeData());
-        }
-        return bundleTable;
-        */
     }
 
     public TabularData listBundles(String ... items) throws IOException {

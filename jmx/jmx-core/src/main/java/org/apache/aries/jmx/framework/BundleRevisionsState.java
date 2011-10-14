@@ -23,7 +23,11 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
 
 import org.apache.aries.jmx.Logger;
+import org.apache.aries.jmx.codec.BundleWiringData;
+import org.apache.aries.jmx.util.FrameworkUtils;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.jmx.framework.BundleRevisionsStateMBean;
 
 public class BundleRevisionsState implements BundleRevisionsStateMBean {
@@ -55,10 +59,15 @@ public class BundleRevisionsState implements BundleRevisionsStateMBean {
     /* (non-Javadoc)
      * @see org.osgi.jmx.framework.BundleRevisionsStateMBean#getCurrentWiring(long, java.lang.String)
      */
-    public CompositeData getCurrentWiring(long bundleId, String namespace) {
-        System.out.println("*********** About to obtain current wiring for " + bundleId + "-" + namespace);
+    public CompositeData getCurrentWiring(long bundleId, String namespace) throws IOException {
+        Bundle bundle = FrameworkUtils.resolveBundle(bundleContext, bundleId);
+        BundleRevision currentRevision = bundle.adapt(BundleRevision.class);
 
-        return null;
+        System.out.println("******** getCurrentWiring: " + bundle);
+        BundleWiringData data = new BundleWiringData(bundle.getBundleId());
+        CompositeData compositeData = data.toCompositeData();
+        System.out.println("######## " + compositeData);
+        return compositeData;
     }
 
     /* (non-Javadoc)

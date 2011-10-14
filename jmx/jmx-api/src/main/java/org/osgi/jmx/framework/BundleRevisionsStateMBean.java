@@ -158,7 +158,7 @@ public interface BundleRevisionsStateMBean {
     String BUNDLE_ID = "BundleId";
     Item BUNDLE_ID_ITEM = new Item(BUNDLE_ID,
             "The bundle identifier of the bundle revision",
-            SimpleType.STRING);
+            SimpleType.LONG);
 
     ArrayType REQUIREMENT_TYPE_ARRAY =
         Item.arrayType(1, BUNDLE_REQUIREMENT_TYPE);
