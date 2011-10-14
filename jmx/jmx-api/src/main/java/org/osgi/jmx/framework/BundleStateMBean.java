@@ -453,6 +453,8 @@ public interface BundleStateMBean {
 	 */
 	TabularData listBundles() throws IOException;
 
+	TabularData listBundles(String ... items) throws IOException;
+
 	/**
 	 * Answer the list of exported packages for this bundle.
 	 *

@@ -31,6 +31,8 @@ import static org.apache.aries.jmx.util.FrameworkUtils.resolveBundle;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.List;
@@ -273,6 +275,8 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
      * @see org.osgi.jmx.framework.BundleStateMBean#listBundles()
      */
     public TabularData listBundles() throws IOException {
+        return listBundles(BundleStateMBean.BUNDLE_TYPE.keySet());
+        /*
         Bundle[] containerBundles = bundleContext.getBundles();
         List<BundleData> bundleDatas = new ArrayList<BundleData>();
         if (containerBundles != null) {
@@ -283,6 +287,26 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
         TabularData bundleTable = new TabularDataSupport(BUNDLES_TYPE);
         for (BundleData bundleData : bundleDatas) {
             bundleTable.put(bundleData.toCompositeData());
+        }
+        return bundleTable;
+        */
+    }
+
+    public TabularData listBundles(String ... items) throws IOException {
+        return listBundles(Arrays.asList(items));
+    }
+
+    private TabularData listBundles(Collection<String> items) throws IOException {
+        Bundle[] containerBundles = bundleContext.getBundles();
+        List<BundleData> bundleDatas = new ArrayList<BundleData>();
+        if (containerBundles != null) {
+            for (Bundle containerBundle : containerBundles) {
+                bundleDatas.add(new BundleData(bundleContext, containerBundle, packageAdmin, startLevel));
+            }
+        }
+        TabularData bundleTable = new TabularDataSupport(BUNDLES_TYPE);
+        for (BundleData bundleData : bundleDatas) {
+            bundleTable.put(bundleData.toCompositeData(items));
         }
         return bundleTable;
     }
