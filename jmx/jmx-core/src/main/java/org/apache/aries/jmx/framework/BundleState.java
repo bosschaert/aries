@@ -132,6 +132,11 @@ public class BundleState extends NotificationBroadcasterSupport implements Bundl
         return headerTable;
     }
 
+    public String getHeader(long bundleId, String key) throws IOException {
+        Bundle bundle = resolveBundle(bundleContext, bundleId);
+        return (String) bundle.getHeaders().get(key);
+    }
+
     /**
      * @see org.osgi.jmx.framework.BundleStateMBean#getHosts(long)
      */

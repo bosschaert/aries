@@ -494,6 +494,9 @@ public interface BundleStateMBean {
 	 *             if the bundle indicated does not exist
 	 */
 	TabularData getHeaders(long bundleId) throws IOException;
+    TabularData getHeaders(long bundleId, String locale) throws IOException;
+    String getHeader(long bundleId, String key) throws IOException;
+    String getHeader(long bundleId, String key, String locale) throws IOException;
 
 	/**
 	 * Answer the list of bundle ids of the bundles which host a fragment
