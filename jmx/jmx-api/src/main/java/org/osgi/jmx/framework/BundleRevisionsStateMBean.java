@@ -15,6 +15,8 @@
  */
 package org.osgi.jmx.framework;
 
+import java.io.IOException;
+
 import javax.management.openmbean.ArrayType;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
@@ -32,7 +34,7 @@ import org.osgi.jmx.JmxConstants;
  * Particularly, the limitations are:
  *  - Cannot retrieve references to resources (e.g. class) of a particular bundle wiring.
  */
-public interface BundleRevisionsMBean {
+public interface BundleRevisionsStateMBean {
     /*
      * The Object Name for a Bundle Revisions MBean.
      */
@@ -203,7 +205,7 @@ public interface BundleRevisionsMBean {
      *
      */
     ArrayType getCurrentRevisionDeclaredRequirements(long bundleId,
-            String namespace);
+            String namespace) throws IOException;
 
     /**
      * Returns the capabilities for the current bundle revision.
@@ -215,7 +217,7 @@ public interface BundleRevisionsMBean {
      * and <code>namespace</code>
      */
     ArrayType getCurrentRevisionDeclaredCapabilities(long bundleId,
-            String namespace);
+            String namespace) throws IOException;
 
     /**
      * Returns the bundle wiring for the current bundle revision.
@@ -226,7 +228,8 @@ public interface BundleRevisionsMBean {
      * @return the wires for the current revision of <code>bundleId</code>
      * and <code>namespace</code>
      */
-    CompositeData getCurrentWiring(long bundleId, String namespace);
+    CompositeData getCurrentWiring(long bundleId, String namespace) throws IOException;
+    CompositeData getCurrentWiringClosure(long rootBundleId) throws IOException;
 
     /**
      * Returns the requirements for all revisions of the bundle.
@@ -241,7 +244,7 @@ public interface BundleRevisionsMBean {
      *
      */
     ArrayType getRevisionsDeclaredRequirements(long bundleId,
-            String namespace, boolean inUse);
+            String namespace, boolean inUse) throws IOException;
 
     /**
      * Returns the capabilities for all revisions of the bundle.
@@ -255,7 +258,7 @@ public interface BundleRevisionsMBean {
      * @return the declared capabilities for all revisions of <code>bundleId</code>
      */
     ArrayType getRevisionsDeclaredCapabilities(long bundleId,
-            String namespace, boolean inUse);
+            String namespace, boolean inUse) throws IOException;
 
     /**
      * Returns the bundle wirings for all revisions of the bundle.
@@ -267,7 +270,7 @@ public interface BundleRevisionsMBean {
      * @param namespace
      * @return the wires for all revisions of <code>bundleId</code>
      */
-    ArrayType getRevisionsWiring(long bundleId, String namespace);
+    ArrayType getRevisionsWiring(long bundleId, String namespace) throws IOException;
 
     /**
      * Returns a closure of all bundle wirings linked by their
@@ -281,7 +284,7 @@ public interface BundleRevisionsMBean {
      * @param namespace
      * @return a closure of bundle wirings linked together by wires.
      */
-    ArrayType getWiringClosure(long rootBundleId, String namespace);
+    ArrayType getWiringClosure(long rootBundleId, String namespace) throws IOException;
 
     /**
      * Returns true if capability provided by <code>provider</code> matches
@@ -298,5 +301,5 @@ public interface BundleRevisionsMBean {
      * @param provider bundle id of the bundle provider
      * @return true if capability matches with requirement.
      */
-    boolean matches(CompositeType provider, CompositeType requirer);
+    boolean matches(CompositeType provider, CompositeType requirer) throws IOException;
 }
