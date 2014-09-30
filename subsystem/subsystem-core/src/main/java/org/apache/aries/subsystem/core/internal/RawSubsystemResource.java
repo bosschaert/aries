@@ -29,12 +29,15 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.aries.subsystem.ContentHandler;
+import org.apache.aries.subsystem.core.archive.Attribute;
 import org.apache.aries.subsystem.core.archive.DeploymentManifest;
 import org.apache.aries.subsystem.core.archive.Header;
 import org.apache.aries.subsystem.core.archive.ImportPackageHeader;
 import org.apache.aries.subsystem.core.archive.RequireBundleHeader;
 import org.apache.aries.subsystem.core.archive.RequireCapabilityHeader;
 import org.apache.aries.subsystem.core.archive.SubsystemContentHeader;
+import org.apache.aries.subsystem.core.archive.SubsystemContentHeader.Clause;
 import org.apache.aries.subsystem.core.archive.SubsystemImportServiceHeader;
 import org.apache.aries.subsystem.core.archive.SubsystemManifest;
 import org.apache.aries.subsystem.core.archive.SubsystemSymbolicNameHeader;
@@ -64,35 +67,35 @@ import org.slf4j.LoggerFactory;
 
 public class RawSubsystemResource implements Resource {
 	private static final Logger logger = LoggerFactory.getLogger(RawSubsystemResource.class);
-	
+
 	private static final Pattern PATTERN = Pattern.compile("([^@/\\\\]+)(?:@(.+))?.esa");
 	private static final String APPLICATION_IMPORT_SERVICE_HEADER = "Application-ImportService";
-	
+
 	private static SubsystemManifest computeExistingSubsystemManifest(IDirectory directory) throws IOException {
 		Manifest manifest = ManifestProcessor.obtainManifestFromAppDir(directory, "OSGI-INF/SUBSYSTEM.MF");
 		if (manifest == null)
 			return null;
 		return new SubsystemManifest(manifest);
 	}
-	
+
 	private static SubsystemManifest computeNewSubsystemManifest() {
 		return new SubsystemManifest.Builder().build();
 	}
-	
+
 	private static SubsystemManifest computeSubsystemManifest(IDirectory directory) throws IOException {
 		SubsystemManifest result = computeExistingSubsystemManifest(directory);
 		if (result == null)
 			result = computeNewSubsystemManifest();
 		return result;
 	}
-	
+
 	private static String convertFileToLocation(IFile file) throws MalformedURLException {
 		String result = convertFileNameToLocation(file.getName());
 		if (result == null)
 			result = file.toURL().toString();
 		return result;
 	}
-	
+
 	private static String convertFileNameToLocation(String fileName) {
 		Matcher matcher = PATTERN.matcher(fileName);
 		if (!matcher.matches())
@@ -101,7 +104,7 @@ public class RawSubsystemResource implements Resource {
 		return new SubsystemUri(matcher.group(1), version == null ? null
 				: Version.parseVersion(version), null).toString();
 	}
-	
+
 	private final List<Capability> capabilities;
 	private final DeploymentManifest deploymentManifest;
 	private final long id;
@@ -111,15 +114,15 @@ public class RawSubsystemResource implements Resource {
 	private final Collection<Resource> resources;
 	private final Resource fakeImportServiceResource;
 	private final SubsystemManifest subsystemManifest;
-	
+
 	public RawSubsystemResource(String location, IDirectory content) throws URISyntaxException, IOException, ResolutionException {
 		id = SubsystemIdentifier.getNextId();
 		this.location = new Location(location);
 		if (content == null)
 			content = this.location.open();
 		try {
-			resources = computeResources(content);
-			SubsystemManifest manifest = computeSubsystemManifest(content);
+            SubsystemManifest manifest = computeSubsystemManifest(content);
+			resources = computeResources(content, manifest);
 			fakeImportServiceResource = createFakeResource(manifest);
 			localRepository = computeLocalRepository();
 			manifest = computeSubsystemManifestBeforeRequirements(manifest);
@@ -132,11 +135,11 @@ public class RawSubsystemResource implements Resource {
 			IOUtils.close(content.toCloseable());
 		}
 	}
-	
+
 	public RawSubsystemResource(File file) throws IOException, URISyntaxException, ResolutionException {
 		this(FileSystem.getFSRoot(file));
 	}
-	
+
 	public RawSubsystemResource(IDirectory idir) throws IOException, URISyntaxException, ResolutionException {
 		resources = Collections.emptyList();
 		fakeImportServiceResource = null; // not needed for persistent subsystems
@@ -217,19 +220,19 @@ public class RawSubsystemResource implements Resource {
 		result.trimToSize();
 		return Collections.unmodifiableList(result);
 	}
-	
+
 	public DeploymentManifest getDeploymentManifest() {
 		return deploymentManifest;
 	}
-	
+
 	public long getId() {
 		return id;
 	}
-	
+
 	public Repository getLocalRepository() {
 		return localRepository;
 	}
-	
+
 	public Location getLocation() {
 		return location;
 	}
@@ -245,71 +248,71 @@ public class RawSubsystemResource implements Resource {
 		result.trimToSize();
 		return Collections.unmodifiableList(result);
 	}
-	
+
 	public Collection<Resource> getResources() {
 		return Collections.unmodifiableCollection(resources);
 	}
-	
+
 	public SubsystemManifest getSubsystemManifest() {
 		return subsystemManifest;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		int result = 17;
 		result = 31 * result + getLocation().hashCode();
 		return result;
 	}
-	
+
 	private void addHeader(SubsystemManifest.Builder builder, Header<?> header) {
 		if (header == null)
 			return;
 		builder.header(header);
 	}
-	
+
 	private void addImportPackageHeader(SubsystemManifest.Builder builder) {
 		addHeader(builder, computeImportPackageHeader());
 	}
-	
+
 	private void addRequireBundleHeader(SubsystemManifest.Builder builder) {
 		addHeader(builder, computeRequireBundleHeader());
 	}
-	
+
 	private void addRequireCapabilityHeader(SubsystemManifest.Builder builder) {
 		addHeader(builder, computeRequireCapabilityHeader());
 	}
-	
+
 	private void addSubsystemContentHeader(SubsystemManifest.Builder builder, SubsystemManifest manifest) {
 		addHeader(builder, computeSubsystemContentHeader(manifest));
 	}
-	
+
 	private void addSubsystemImportServiceHeader(SubsystemManifest.Builder builder) {
 		addHeader(builder, computeSubsystemImportServiceHeader());
 	}
-	
+
 	private void addSubsystemSymbolicNameHeader(SubsystemManifest.Builder builder, SubsystemManifest manifest) {
 		addHeader(builder, computeSubsystemSymbolicNameHeader(manifest));
 	}
-	
+
 	private void addSubsystemVersionHeader(SubsystemManifest.Builder builder, SubsystemManifest manifest) {
 		addHeader(builder, computeSubsystemVersionHeader(manifest));
 	}
-	
+
 	private List<Capability> computeCapabilities() {
 		return subsystemManifest.toCapabilities(this);
 	}
-	
+
 	private DeploymentManifest computeDeploymentManifest(IDirectory directory) throws IOException {
 		return computeExistingDeploymentManifest(directory);
 	}
-	
+
 	private DeploymentManifest computeExistingDeploymentManifest(IDirectory directory) throws IOException {
 		Manifest manifest = ManifestProcessor.obtainManifestFromAppDir(directory, "OSGI-INF/DEPLOYMENT.MF");
 		if (manifest == null)
 			return null;
 		return new DeploymentManifest(manifest);
 	}
-	
+
 	private ImportPackageHeader computeImportPackageHeader() {
 		if (requirements.isEmpty())
 			return null;
@@ -324,7 +327,7 @@ public class RawSubsystemResource implements Resource {
 		clauses.trimToSize();
 		return new ImportPackageHeader(clauses);
 	}
-	
+
 	private Repository computeLocalRepository() {
 		if (fakeImportServiceResource != null) {
 			Collection<Resource> temp = new ArrayList<Resource>(resources);
@@ -333,7 +336,7 @@ public class RawSubsystemResource implements Resource {
 		}
 		return new LocalRepository(resources);
 	}
-	
+
 	private RequireBundleHeader computeRequireBundleHeader() {
 		if (requirements.isEmpty())
 			return null;
@@ -348,14 +351,14 @@ public class RawSubsystemResource implements Resource {
 		clauses.trimToSize();
 		return new RequireBundleHeader(clauses);
 	}
-	
+
 	private RequireCapabilityHeader computeRequireCapabilityHeader() {
 		if (requirements.isEmpty())
 			return null;
 		ArrayList<RequireCapabilityHeader.Clause> clauses = new ArrayList<RequireCapabilityHeader.Clause>();
 		for (Requirement requirement : requirements) {
 			String namespace = requirement.getNamespace();
-			if (namespace.startsWith("osgi.") && 
+			if (namespace.startsWith("osgi.") &&
 					// Don't filter out the osgi.ee namespace.
 					!namespace.equals(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE))
 				continue;
@@ -366,7 +369,7 @@ public class RawSubsystemResource implements Resource {
 		clauses.trimToSize();
 		return new RequireCapabilityHeader(clauses);
 	}
-	
+
 	private List<Requirement> computeRequirements(SubsystemManifest manifest) throws ResolutionException {
 		if (isComposite(manifest))
 			return manifest.toRequirements(this);
@@ -387,8 +390,8 @@ public class RawSubsystemResource implements Resource {
 		}
 		return new DependencyCalculator(resources).calculateDependencies();
 	}
-	
-	private Collection<Resource> computeResources(IDirectory directory) throws IOException, URISyntaxException, ResolutionException {
+
+	private Collection<Resource> computeResources(IDirectory directory, SubsystemManifest manifest) throws IOException, URISyntaxException, ResolutionException {
 		List<IFile> files = directory.listFiles();
 		if (files.isEmpty())
 			return Collections.emptyList();
@@ -396,49 +399,69 @@ public class RawSubsystemResource implements Resource {
 		for (IFile file : directory.listFiles()) {
 			String name = file.getName();
 			if (file.isFile()) {
-				// Subsystem resources must end with ".esa".
-				if (name.endsWith(".esa"))
+				if (name.endsWith(".esa")) {
 					result.add(new RawSubsystemResource(convertFileToLocation(file), file.convertNested()));
-				else {
-					// Assume all other resources are bundles.
-					try {
-						result.add(new BundleResource(file));
-					}
-					catch (Exception e) {
-						// Ignore if the resource is an invalid bundle or not a bundle at all.
-						if (logger.isDebugEnabled()) {
-							logger.debug("File \"" + file.getName() + "\" in subsystem with location \"" + location + "\" will be ignored because it is not recognized as a supported resource", e);
-						}
-					}
+				} else if (name.endsWith(".jar")) {
+                    result.add(new BundleResource(file));
+				} else {
+				    // TODO only add FileResources if there is custom handler for it
+				    FileResource fr = new FileResource(file);
+				    fr.setCapabilities(computeFileCapabilities(fr, file, manifest));
+                    result.add(fr);
 				}
 			}
 			else {
-				if (name.endsWith(".esa"))
+				if (name.endsWith(".esa")) {
 					result.add(new RawSubsystemResource(convertFileToLocation(file), file.convert()));
-				else {
-					try {
-						result.add(new BundleResource(file));
-					}
-					catch (Exception e) {
-						// Ignore
-						if (logger.isDebugEnabled()) {
-							logger.debug("File \"" + file.getName() + "\" in subsystem with location \"" + location + "\" will be ignored because it is not recognized as a supported resource", e);
-						}
-					}
+				} else if (name.endsWith(".jar")) {
+					result.add(new BundleResource(file));
+                } else {
+                    /** TODO this doesn't work yet
+                    try {
+                        FileResource fr = new FileResource(file);
+                        fr.setCapabilities(computeFileCapabilities(fr, file, manifest));
+                        result.add(fr);
+                    } catch (Exception e) {
+                        // Ignore if the resource is an invalid bundle or not a bundle at all.
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("File \"" + file.getName() + "\" in subsystem with location \"" + location + "\" will be ignored because it is not recognized as a supported resource", e);
+                        }
+                    }
+                    */
 				}
 			}
 		}
 		result.trimToSize();
 		return result;
 	}
-	
-	private SubsystemContentHeader computeSubsystemContentHeader(SubsystemManifest manifest) {
+
+	private List<Capability> computeFileCapabilities(FileResource resource, IFile file, SubsystemManifest manifest) {
+	    SubsystemContentHeader ssch = manifest.getSubsystemContentHeader();
+	    if (ssch == null)
+	        return Collections.emptyList();
+
+	    for (Clause c : ssch.getClauses()) {
+	        Attribute er = c.getAttribute(ContentHandler.EMBEDDED_RESOURCE_ATTRIBUTE);
+	        if (er != null) {
+                if (file.getName().equals(er.getValue())) {
+    	            Map<String, Object> attrs = new HashMap<String, Object>();
+    	            attrs.put(ContentHandler.EMBEDDED_RESOURCE_ATTRIBUTE, er.getValue());
+                    return Collections.<Capability>singletonList(
+	                    new OsgiIdentityCapability(resource, c.getSymbolicName(),
+                            c.getVersionRange().getLeft(), c.getType(), attrs));
+    	        }
+	        }
+	    }
+        return Collections.emptyList();
+    }
+
+    private SubsystemContentHeader computeSubsystemContentHeader(SubsystemManifest manifest) {
 		SubsystemContentHeader header = manifest.getSubsystemContentHeader();
 		if (header == null && !resources.isEmpty())
 			header = SubsystemContentHeader.newInstance(resources);
 		return header;
 	}
-	
+
 	private SubsystemImportServiceHeader computeSubsystemImportServiceHeader() {
 		if (requirements.isEmpty())
 			return null;
@@ -453,7 +476,7 @@ public class RawSubsystemResource implements Resource {
 		clauses.trimToSize();
 		return new SubsystemImportServiceHeader(clauses);
 	}
-	
+
 	private SubsystemManifest computeSubsystemManifestAfterRequirements(SubsystemManifest manifest) {
 		if (isComposite(manifest))
 			return manifest;
@@ -464,7 +487,7 @@ public class RawSubsystemResource implements Resource {
 		addSubsystemImportServiceHeader(builder);
 		return builder.build();
 	}
-	
+
 	private SubsystemManifest computeSubsystemManifestBeforeRequirements(SubsystemManifest manifest) {
 		SubsystemManifest.Builder builder = new SubsystemManifest.Builder().manifest(manifest);
 		addSubsystemSymbolicNameHeader(builder, manifest);
@@ -472,7 +495,7 @@ public class RawSubsystemResource implements Resource {
 		addSubsystemContentHeader(builder, manifest);
 		return builder.build();
 	}
-	
+
 	private SubsystemSymbolicNameHeader computeSubsystemSymbolicNameHeader(SubsystemManifest manifest) {
 		SubsystemSymbolicNameHeader header = manifest.getSubsystemSymbolicNameHeader();
 		if (header != null)
@@ -482,14 +505,14 @@ public class RawSubsystemResource implements Resource {
 			symbolicName = "org.apache.aries.subsystem." + id;
 		return new SubsystemSymbolicNameHeader(symbolicName);
 	}
-	
+
 	private SubsystemVersionHeader computeSubsystemVersionHeader(SubsystemManifest manifest) {
 		SubsystemVersionHeader header = manifest.getSubsystemVersionHeader();
 		if (header.getVersion().equals(Version.emptyVersion) && location.getVersion() != null)
 			header = new SubsystemVersionHeader(location.getVersion());
 		return header;
 	}
-	
+
 	private DeploymentManifest initializeDeploymentManifest(IDirectory idir)
 			throws IOException {
 		Manifest manifest = ManifestProcessor.obtainManifestFromAppDir(idir,
@@ -504,7 +527,7 @@ public class RawSubsystemResource implements Resource {
 					.state(State.INSTALLING)
 					.build();
 	}
-	
+
 	private SubsystemManifest initializeSubsystemManifest(IDirectory idir)
 			throws IOException {
 		Manifest manifest = ManifestProcessor.obtainManifestFromAppDir(idir,
@@ -522,7 +545,7 @@ public class RawSubsystemResource implements Resource {
 							+ SubsystemTypeHeader.PROVISION_POLICY_ACCEPT_DEPENDENCIES)
 					.build();
 	}
-	
+
 	private boolean isComposite(SubsystemManifest manifest) {
 		return SubsystemConstants.SUBSYSTEM_TYPE_COMPOSITE.equals(manifest.getSubsystemTypeHeader().getType());
 	}
