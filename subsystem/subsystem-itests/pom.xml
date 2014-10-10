@@ -181,7 +181,7 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.configadmin</artifactId>
             <scope>test</scope>
-            <version>1.2.8</version>
+            <version>1.8.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.osgi</groupId>
@@ -489,6 +489,25 @@
                     </execution>
 
                     <execution>
+                        <id>cm-content-bundleZ</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestFile>src/test/bundles/cmContentBundleZ/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                            <classesDirectory>${project.build.directory}/test-classes</classesDirectory>
+                            <includes>
+                                <include>org/apache/aries/subsystem/itests/cmcontent/impl/**</include>
+                            </includes>
+                            <outputDirectory>${project.build.directory}/test-classes/cmContent</outputDirectory>
+                            <finalName>cmContentBundleZ</finalName>
+                        </configuration>
+                        <phase>process-test-classes</phase>
+                    </execution>
+
+                    <execution>
                         <id>custom-content-bundleA</id>
                         <goals>
                             <goal>jar</goal>
@@ -611,6 +630,19 @@
                         <configuration>
                             <sources>
                                 <source>src/test/bundles/helloImpl</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>add-source-cmContentBundleZ</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/test/bundles/cmContentBundleZ</source>
                             </sources>
                         </configuration>
                     </execution>

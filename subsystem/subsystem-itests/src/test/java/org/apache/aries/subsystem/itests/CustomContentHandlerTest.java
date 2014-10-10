@@ -50,7 +50,7 @@ public class CustomContentHandlerTest extends SubsystemTest {
         ServiceRegistration<ContentHandler> reg = bundleContext.registerService(ContentHandler.class, handler, props);
 
         assertEquals("Precondition", 0, handler.calls.size());
-        Subsystem subsystem = installSubsystemFromFile("customcontent.esa");
+        Subsystem subsystem = installSubsystemFromFile("customContent.esa");
         try {
             assertEquals(Arrays.asList("install:customContent1 sausages = 1"), handler.calls);
 
