@@ -20,8 +20,8 @@ import org.osgi.framework.Filter;
 import org.osgi.service.subsystem.Subsystem;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class ConfigAdminContentHandlerTest extends SubsystemTest {
-    public ConfigAdminContentHandlerTest() {
+public class ConfigAdminPropsFileContentHandlerTest extends SubsystemTest {
+    public ConfigAdminPropsFileContentHandlerTest() {
         installConfigAdmin = true;
     }
 

@@ -22,16 +22,18 @@ import org.osgi.service.repository.RepositoryContent;
 
 public class CustomResourceInstaller extends ResourceInstaller {
     private final ContentHandler handler;
+    private final String type;
 
-    public CustomResourceInstaller(Coordination coordination, Resource resource, BasicSubsystem subsystem, ContentHandler handler) {
+    public CustomResourceInstaller(Coordination coordination, Resource resource, String type, BasicSubsystem subsystem, ContentHandler handler) {
         super(coordination, resource, subsystem);
         this.handler = handler;
+        this.type = type;
     }
 
     @Override
     public Resource install() throws Exception {
         InputStream is = ((RepositoryContent) resource).getContent();
-        handler.install(is, ResourceHelper.getSymbolicNameAttribute(resource), subsystem, coordination);
+        handler.install(is, ResourceHelper.getSymbolicNameAttribute(resource), type, subsystem, coordination);
         return resource;
     }
 }

@@ -39,7 +39,7 @@ public interface ContentHandler {
      * @param coordination The current coordination. Can be used to register a compensation in case of
      * failure or to fail the installation action.
      */
-    void install(InputStream is, String symbolicName, Subsystem subsystem, Coordination coordination);
+    void install(InputStream is, String symbolicName, String contentType, Subsystem subsystem, Coordination coordination);
 
     /**
      * Start this custom content.
@@ -47,7 +47,7 @@ public interface ContentHandler {
      * @param subsystem The current subsystem.
      * @param coordination The current coordination.
      */
-    void start(String symbolicName, Subsystem subsystem, Coordination coordination);
+    void start(String symbolicName, String contentType, Subsystem subsystem, Coordination coordination);
 
     /**
      * Stop this custom content.
@@ -55,7 +55,7 @@ public interface ContentHandler {
      * @param subsystem The current subsystem.
      * @param coordination The current coordination.
      */
-    void stop(String symbolicName, Subsystem subsystem, Coordination coordination);
+    void stop(String symbolicName, String contentType, Subsystem subsystem, Coordination coordination);
 
     /**
      * Uninstall this custom content.
@@ -63,5 +63,5 @@ public interface ContentHandler {
      * @param subsystem The current subsystem.
      * @param coordination The current coordination.
      */
-    void uninstall(String symbolicName, Subsystem subsystem, Coordination coordination);
+    void uninstall(String symbolicName, String contentType, Subsystem subsystem, Coordination coordination);
 }

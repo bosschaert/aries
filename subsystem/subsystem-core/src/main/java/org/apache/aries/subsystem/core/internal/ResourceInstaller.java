@@ -46,7 +46,7 @@ public abstract class ResourceInstaller {
 		} else {
 		    ContentHandler handler = findCustomContentHandler(coordination, type, subsystem);
 		    if (handler != null)
-		        return new CustomResourceInstaller(coordination, resource, subsystem, handler);
+		        return new CustomResourceInstaller(coordination, resource, type, subsystem, handler);
 
 		}
 		throw new SubsystemException("No installer exists for resource type: " + type);

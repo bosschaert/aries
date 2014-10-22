@@ -156,7 +156,7 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer<Obje
 		registerBundleEventHook();
 		registrations.add(bundleContext.registerService(ResolverHookFactory.class, new SubsystemResolverHookFactory(subsystems), null));
 		Dictionary<String, Object> handlerProps = new Hashtable<String, Object>();
-		handlerProps.put(ContentHandler.CONTENT_TYPE_PROPERTY, ConfigAdminContentHandler.CONTENT_TYPE);
+		handlerProps.put(ContentHandler.CONTENT_TYPE_PROPERTY, ConfigAdminContentHandler.CONTENT_TYPES);
         configAdminHandler = new ConfigAdminContentHandler(bundleContext);
         registrations.add(bundleContext.registerService(ContentHandler.class, configAdminHandler, handlerProps));
 		registrar = new SubsystemServiceRegistrar(bundleContext);

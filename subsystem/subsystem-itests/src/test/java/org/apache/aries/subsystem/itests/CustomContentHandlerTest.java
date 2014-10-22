@@ -82,23 +82,23 @@ public class CustomContentHandlerTest extends SubsystemTest {
         }
 
         @Override
-        public void install(InputStream is, String symbolicName, Subsystem subsystem, Coordination coordination) {
+        public void install(InputStream is, String symbolicName, String type, Subsystem subsystem, Coordination coordination) {
             String content = convertStreamToString(is);
             calls.add(("install:" + symbolicName + " " + content).trim());
         }
 
         @Override
-        public void start(String symbolicName, Subsystem subsystem, Coordination coordination) {
+        public void start(String symbolicName, String type, Subsystem subsystem, Coordination coordination) {
             calls.add("start:" + symbolicName);
         }
 
         @Override
-        public void stop(String symbolicName, Subsystem subsystem, Coordination coordination) {
+        public void stop(String symbolicName, String type, Subsystem subsystem, Coordination coordination) {
             calls.add("stop:" + symbolicName);
         }
 
         @Override
-        public void uninstall(String symbolicName, Subsystem subsystem, Coordination coordination) {
+        public void uninstall(String symbolicName, String type, Subsystem subsystem, Coordination coordination) {
             calls.add("uninstall:" + symbolicName);
         }
     }
