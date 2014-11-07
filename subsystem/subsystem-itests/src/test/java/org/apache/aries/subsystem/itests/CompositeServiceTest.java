@@ -14,24 +14,44 @@
 package org.apache.aries.subsystem.itests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
+import org.osgi.framework.Filter;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.subsystem.Subsystem;
+import org.osgi.util.tracker.ServiceTracker;
 
 public class CompositeServiceTest extends SubsystemTest {
 
     @Override
     protected void createApplications() throws Exception {
-        createApplication("composite2", "tb3.jar");
+        createApplication("composite2", "tb4.jar");
     }
 
     @Test
     public void testCompositeServiceImports() throws Exception {
+        ServiceRegistration<String> reg = bundleContext.registerService(String.class, "foo", null);
+
+        Filter filter = bundleContext.createFilter("(&(objectClass=java.lang.String)(test=tb4))");
+        ServiceTracker<String, String> st = new ServiceTracker<String, String>(bundleContext, filter, null);
+        st.open();
+
         Subsystem subsystem = installSubsystemFromFile("composite2.esa");
         try {
-            assertEquals("", subsystem.getState());
+            assertEquals(Subsystem.State.INSTALLED, subsystem.getState());
+            subsystem.start();
+
+            String svc = st.waitForService(5000);
+            System.out.println("*** Found service: " + svc);
+            assertNotNull("The service registered by the bundle inside the composite cannot be found", svc);
+
+            assertEquals(Subsystem.State.ACTIVE, subsystem.getState());
         } finally {
+            subsystem.stop();
             uninstallSubsystem(subsystem);
+            reg.unregister();
+            st.close();
         }
     }
 }
