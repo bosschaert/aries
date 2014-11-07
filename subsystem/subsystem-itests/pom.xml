@@ -448,6 +448,24 @@
                         </configuration>
                         <phase>process-test-classes</phase>
                     </execution>
+                    <execution>
+                        <id>tb3-composite2</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestFile>src/test/bundles/tb3/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                            <classesDirectory>${project.build.directory}/test-classes</classesDirectory>
+                            <includes>
+                                <include>org/apache/aries/subsystem/itests/tb3/**</include>
+                            </includes>
+                            <outputDirectory>${project.build.directory}/test-classes/composite2</outputDirectory>
+                            <finalName>tb3</finalName>
+                        </configuration>
+                        <phase>process-test-classes</phase>
+                    </execution>
 
                     <!-- New pom for hello + related tests, part 1 -->
 
