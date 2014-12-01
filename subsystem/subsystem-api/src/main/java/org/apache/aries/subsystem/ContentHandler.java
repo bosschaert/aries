@@ -53,15 +53,13 @@ public interface ContentHandler {
      * Stop this custom content.
      * @param symbolicName The name of the content.
      * @param subsystem The current subsystem.
-     * @param coordination The current coordination.
      */
-    void stop(String symbolicName, String contentType, Subsystem subsystem, Coordination coordination);
+    void stop(String symbolicName, String contentType, Subsystem subsystem);
 
     /**
      * Uninstall this custom content.
      * @param symbolicName The name of the content.
      * @param subsystem The current subsystem.
-     * @param coordination The current coordination.
      */
-    void uninstall(String symbolicName, String contentType, Subsystem subsystem, Coordination coordination);
+    void uninstall(String symbolicName, String contentType, Subsystem subsystem);
 }

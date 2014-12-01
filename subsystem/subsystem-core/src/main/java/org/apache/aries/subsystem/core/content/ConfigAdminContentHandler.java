@@ -79,12 +79,12 @@ public class ConfigAdminContentHandler implements ContentHandler {
     }
 
     @Override
-    public void stop(String symbolicName, String contentType, Subsystem subsystem, Coordination coordination) {
+    public void stop(String symbolicName, String contentType, Subsystem subsystem) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void uninstall(String symbolicName, String contentType, Subsystem subsystem, Coordination coordination) {
+    public void uninstall(String symbolicName, String contentType, Subsystem subsystem) {
         // TODO Auto-generated method stub
     }
 }

@@ -67,10 +67,35 @@ public class CustomContentHandlerTest extends SubsystemTest {
                 }
             }
             assertTrue(foundBundle);
+
+            handler.calls.clear();
+            assertEquals(Subsystem.State.INSTALLED, subsystem.getState());
+
+            subsystem.start();
+            assertEquals(Arrays.asList("start:customContent1"), handler.calls);
+
+            handler.calls.clear();
+            assertEquals(Subsystem.State.ACTIVE, subsystem.getState());
+
+            subsystem.stop();
+            assertEquals(Arrays.asList("stop:customContent1"), handler.calls);
+
+            assertEquals(Subsystem.State.RESOLVED, subsystem.getState());
         } finally {
-            uninstallSubsystemSilently(subsystem);
+            handler.calls.clear();
+            subsystem.uninstall();
+            assertEquals(Arrays.asList("uninstall:customContent1"), handler.calls);
+            assertEquals(Subsystem.State.UNINSTALLED, subsystem.getState());
+
             reg.unregister();
         }
+    }
+
+    @Test
+    public void testCustomContentInstallationFails() {
+        // TODO fail("TODO");
+        // fail the coordination ... or ...
+        // throw an exception
     }
 
     static class SausagesContentHandler implements ContentHandler {
@@ -93,12 +118,12 @@ public class CustomContentHandlerTest extends SubsystemTest {
         }
 
         @Override
-        public void stop(String symbolicName, String type, Subsystem subsystem, Coordination coordination) {
+        public void stop(String symbolicName, String type, Subsystem subsystem) {
             calls.add("stop:" + symbolicName);
         }
 
         @Override
-        public void uninstall(String symbolicName, String type, Subsystem subsystem, Coordination coordination) {
+        public void uninstall(String symbolicName, String type, Subsystem subsystem) {
             calls.add("uninstall:" + symbolicName);
         }
     }

@@ -49,7 +49,7 @@ public class InstallTest extends SubsystemTest {
 	public InputStream getResourceAsStream(String path) {
 		return SubsystemTest.class.getClassLoader().getResourceAsStream(path);
 	}
-	
+
 	@Override
 	public void createApplications() throws Exception {
 		createCompositeDirEsa();
@@ -94,7 +94,7 @@ public class InstallTest extends SubsystemTest {
     	compositeDir.mkdir();
     	IOUtils.unpackZip(idir.getFile("compositeDir.esa"), compositeDir);
 	}
-	
+
 	@Test
 	public void testReturnExistingSubsystemWithSameLocation() throws Exception {
 		Subsystem subsystem1 = installSubsystemFromFile("feature3.esa");
@@ -106,10 +106,10 @@ public class InstallTest extends SubsystemTest {
 			uninstallSubsystemSilently(subsystem1);
 		}
 	}
-	
+
 	/*
      * Install a subsystem using a location string and a null input stream. The
-     * location string is a file URL pointing to a subsystem directory 
+     * location string is a file URL pointing to a subsystem directory
      * containing nested subsystem and bundle directories.
      */
     @Test
@@ -118,12 +118,12 @@ public class InstallTest extends SubsystemTest {
     	try {
     		Subsystem subsystem = installSubsystem(getRootSubsystem(), file.toURI().toString(), null);
     		try {
-    			assertSymbolicName("org.apache.aries.subsystem.itests.composite.dir", subsystem); 
+    			assertSymbolicName("org.apache.aries.subsystem.itests.composite.dir", subsystem);
     			assertConstituents(3, subsystem);
     			assertConstituent(subsystem, "org.apache.aries.subsystem.itests.composite.dir.bundle.a");
     			Bundle b = getConstituentAsBundle(
-    					subsystem, 
-    					"org.apache.aries.subsystem.itests.composite.dir.bundle.a", 
+    					subsystem,
+    					"org.apache.aries.subsystem.itests.composite.dir.bundle.a",
     					null, null);
     			assertLocation(subsystem.getLocation() + "!/" + "a.jar", b.getLocation());
     			assertClassLoadable("a.A", b);
@@ -134,8 +134,8 @@ public class InstallTest extends SubsystemTest {
     					child);
     			assertConstituent(child, "org.apache.aries.subsystem.itests.composite.dir.bundle.b");
     			b = getConstituentAsBundle(
-    					child, 
-    					"org.apache.aries.subsystem.itests.composite.dir.bundle.b", 
+    					child,
+    					"org.apache.aries.subsystem.itests.composite.dir.bundle.b",
     					null, null);
     			assertLocation(child.getLocation() + "!/" + "b.jar", b.getLocation());
     			assertClassLoadable("b.B", b);
@@ -146,15 +146,15 @@ public class InstallTest extends SubsystemTest {
     					child);
     			assertConstituent(subsystem, "org.apache.aries.subsystem.itests.composite.dir.bundle.a");
     			b = getConstituentAsBundle(
-    					child, 
-    					"org.apache.aries.subsystem.itests.composite.dir.bundle.a", 
+    					child,
+    					"org.apache.aries.subsystem.itests.composite.dir.bundle.a",
     					null, null);
     			assertLocation(child.getLocation() + "!/" + "a.jar", b.getLocation());
     			assertClassLoadable("a.A", b);
     			assertConstituent(child, "org.apache.aries.subsystem.itests.composite.dir.bundle.b", Version.parseVersion("1"));
     			b = getConstituentAsBundle(
-    					child, 
-    					"org.apache.aries.subsystem.itests.composite.dir.bundle.b", 
+    					child,
+    					"org.apache.aries.subsystem.itests.composite.dir.bundle.b",
     					Version.parseVersion("1"), null);
     			assertLocation(child.getLocation() + "!/" + "b.jar", b.getLocation());
     			assertClassLoadable("b.B", b);
@@ -162,39 +162,39 @@ public class InstallTest extends SubsystemTest {
     		finally {
     			uninstallSubsystemSilently(subsystem);
     		}
-    		
+
     	}
     	catch (Exception e) {
     		e.printStackTrace();
     		fail("Subsystem installation using directory URL as location failed");
     	}
     }
-    
+
     /*
 	 * Bundle-SymbolicName: bundle.a.jar
 	 */
 	private static final String BUNDLE_A = "bundle.a.jar";
-	
+
 	private void createBundleA() throws IOException {
 		createBundle(name(BUNDLE_A));
 	}
-    
+
     /*
 	 * No symbolic name. No manifest.
 	 */
 	private static final String APPLICATION_A = "application.a.esa";
-	
+
 	private void createApplicationA() throws IOException {
 		createApplicationAManifest();
 		createSubsystem(APPLICATION_A, BUNDLE_A);
 	}
-	
+
 	private void createApplicationAManifest() throws IOException {
 		File manifest = new File(APPLICATION_A + ".mf");
 		if (manifest.exists())
 			assertTrue("Could not delete manifest", manifest.delete());
 	}
-    
+
     @Test
     public void testGeneratedSymbolicNameWithoutManifest() throws Exception {
     	String expected = "org.apache.aries.subsystem.1";
@@ -207,23 +207,23 @@ public class InstallTest extends SubsystemTest {
     		uninstallSubsystemSilently(a);
     	}
     }
-    
+
     /*
 	 * Manifest with no symbolic name header.
 	 */
 	private static final String COMPOSITE_A = "composite.a.esa";
-	
+
 	private static void createCompositeA() throws IOException {
 		createCompositeAManifest();
 		createSubsystem(COMPOSITE_A);
 	}
-	
+
 	private static void createCompositeAManifest() throws IOException {
 		Map<String, String> attributes = new HashMap<String, String>();
 		attributes.put(SubsystemConstants.SUBSYSTEM_TYPE, SubsystemConstants.SUBSYSTEM_TYPE_COMPOSITE);
 		createManifest(COMPOSITE_A + ".mf", attributes);
 	}
-	
+
 	@Test
     public void testGeneratedSymbolicNameWithManifest() throws Exception {
     	String expected = "org.apache.aries.subsystem.1";
@@ -236,37 +236,37 @@ public class InstallTest extends SubsystemTest {
     		uninstallSubsystemSilently(a);
     	}
     }
-	
+
 	/*
 	 * A bundle whose file extension does not end with ".jar".
-	 * 
+	 *
 	 * Bundle-SymbolicName: bundle.b.war
 	 */
 	private static final String BUNDLE_B = "bundle.b.war";
-	
+
 	private void createBundleB() throws IOException {
 		createBundle(name(BUNDLE_B));
 	}
-	
+
 	/*
 	 * Subsystem-SymbolicName: feature.a.esa
 	 * Subsystem-Type: osgi.subsystem.feature
 	 * Subsystem-Content: bundle.b.war
 	 */
 	private static final String FEATURE_A = "feature.a.esa";
-	
+
 	private static void createFeatureA() throws IOException {
 		createFeatureAManifest();
 		createSubsystem(FEATURE_A, BUNDLE_B);
 	}
-	
+
 	private static void createFeatureAManifest() throws IOException {
 		Map<String, String> attributes = new HashMap<String, String>();
 		attributes.put(SubsystemConstants.SUBSYSTEM_SYMBOLICNAME, FEATURE_A);
 		attributes.put(SubsystemConstants.SUBSYSTEM_TYPE, SubsystemConstants.SUBSYSTEM_TYPE_FEATURE);
 		createManifest(FEATURE_A + ".mf", attributes);
 	}
-	
+
 	@Test
 	public void testSupportBundleResourcesNotEndingWithJar() throws Exception {
 		Subsystem featureA = installSubsystemFromFile(FEATURE_A);

@@ -110,14 +110,16 @@ public class RawSubsystemResource implements Resource {
 	private final long id;
 	private final Repository localRepository;
 	private final Location location;
+    private final BasicSubsystem parentSubsystem;
 	private final List<Requirement> requirements;
 	private final Collection<Resource> resources;
 	private final Resource fakeImportServiceResource;
 	private final SubsystemManifest subsystemManifest;
 
-	public RawSubsystemResource(String location, IDirectory content) throws URISyntaxException, IOException, ResolutionException {
+	public RawSubsystemResource(String location, IDirectory content, BasicSubsystem parent) throws URISyntaxException, IOException, ResolutionException {
 		id = SubsystemIdentifier.getNextId();
 		this.location = new Location(location);
+		this.parentSubsystem = parent;
 		if (content == null)
 			content = this.location.open();
 		try {
@@ -150,6 +152,7 @@ public class RawSubsystemResource implements Resource {
 		deploymentManifest = initializeDeploymentManifest(idir);
 		id = Long.parseLong(deploymentManifest.getHeaders().get(DeploymentManifest.ARIESSUBSYSTEM_ID).getValue());
 		location = new Location(deploymentManifest.getHeaders().get(DeploymentManifest.ARIESSUBSYSTEM_LOCATION).getValue());
+		parentSubsystem = null; // TODO
 	}
 
 	private static Resource createFakeResource(SubsystemManifest manifest) {
@@ -400,35 +403,50 @@ public class RawSubsystemResource implements Resource {
 			String name = file.getName();
 			if (file.isFile()) {
 				if (name.endsWith(".esa")) {
-					result.add(new RawSubsystemResource(convertFileToLocation(file), file.convertNested()));
+					result.add(new RawSubsystemResource(convertFileToLocation(file), file.convertNested(), parentSubsystem));
 				} else if (name.endsWith(".jar")) {
                     result.add(new BundleResource(file));
 				} else {
-				    // TODO only add FileResources if there is custom handler for it
 				    FileResource fr = new FileResource(file);
 				    fr.setCapabilities(computeFileCapabilities(fr, file, manifest));
-                    result.add(fr);
-				}
-			}
-			else {
-				if (name.endsWith(".esa")) {
-					result.add(new RawSubsystemResource(convertFileToLocation(file), file.convert()));
-				} else if (name.endsWith(".jar")) {
-					result.add(new BundleResource(file));
-                } else {
-                    /** TODO this doesn't work yet
+                    List<Capability> idcaps = fr.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+                    if (idcaps.size() > 0) {
+                        Capability idcap = idcaps.get(0);
+                        Object type = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE);
+                        if (type instanceof String) {
+                            if (CustomResources.findCustomContentHandler(parentSubsystem, (String) type) != null) {
+                                result.add(fr);
+                                continue;
+                            }
+                        }
+                    }
+
+                    // There is no custom handler for this resource, let's check if it turns out to be a bundle
                     try {
-                        FileResource fr = new FileResource(file);
-                        fr.setCapabilities(computeFileCapabilities(fr, file, manifest));
-                        result.add(fr);
+                        result.add(new BundleResource(file));
                     } catch (Exception e) {
                         // Ignore if the resource is an invalid bundle or not a bundle at all.
                         if (logger.isDebugEnabled()) {
                             logger.debug("File \"" + file.getName() + "\" in subsystem with location \"" + location + "\" will be ignored because it is not recognized as a supported resource", e);
                         }
                     }
-                    */
 				}
+			}
+			else {
+                if (name.endsWith(".esa"))
+                    result.add(new RawSubsystemResource(convertFileToLocation(file), file.convert(), parentSubsystem));
+                else {
+                    // TODO support custom resources
+                    try {
+                        result.add(new BundleResource(file));
+                    }
+                    catch (Exception e) {
+                        // Ignore
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("File \"" + file.getName() + "\" in subsystem with location \"" + location + "\" will be ignored because it is not recognized as a supported resource", e);
+                        }
+                    }
+                }
 			}
 		}
 		result.trimToSize();

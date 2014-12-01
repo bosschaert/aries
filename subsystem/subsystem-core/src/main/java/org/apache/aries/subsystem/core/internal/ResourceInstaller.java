@@ -16,8 +16,6 @@ package org.apache.aries.subsystem.core.internal;
 import org.apache.aries.subsystem.ContentHandler;
 import org.apache.aries.subsystem.core.archive.DeployedContentHeader;
 import org.apache.aries.subsystem.core.archive.DeploymentManifest;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 import org.osgi.service.coordinator.Coordination;
@@ -30,13 +28,12 @@ public abstract class ResourceInstaller {
 		String type = ResourceHelper.getTypeAttribute(resource);
 		if (SubsystemConstants.SUBSYSTEM_TYPE_APPLICATION.equals(type)
 				|| SubsystemConstants.SUBSYSTEM_TYPE_COMPOSITE.equals(type)
-				|| SubsystemConstants.SUBSYSTEM_TYPE_FEATURE.equals(type))
+				|| SubsystemConstants.SUBSYSTEM_TYPE_FEATURE.equals(type)) {
 			return new SubsystemResourceInstaller(coordination, resource, subsystem);
-		else if (IdentityNamespace.TYPE_BUNDLE.equals(type) || IdentityNamespace.TYPE_FRAGMENT.equals(type))
+		} else if (IdentityNamespace.TYPE_BUNDLE.equals(type) || IdentityNamespace.TYPE_FRAGMENT.equals(type)) {
 			return new BundleResourceInstaller(coordination, resource, subsystem);
-		else if (Constants.ResourceTypeSynthesized.equals(type)) {
+		} else if (Constants.ResourceTypeSynthesized.equals(type)) {
 			return new ResourceInstaller(coordination, resource, subsystem) {
-
 				@Override
 				public Resource install() throws Exception {
 					// do nothing;
@@ -44,26 +41,13 @@ public abstract class ResourceInstaller {
 				}
 			};
 		} else {
-		    ContentHandler handler = findCustomContentHandler(coordination, type, subsystem);
+		    ContentHandler handler = CustomResources.findCustomContentHandler(subsystem, type);
 		    if (handler != null)
 		        return new CustomResourceInstaller(coordination, resource, type, subsystem, handler);
 
 		}
 		throw new SubsystemException("No installer exists for resource type: " + type);
 	}
-
-	private static ContentHandler findCustomContentHandler(Coordination coordination, String type, BasicSubsystem subsystem) {
-	    try {
-            for(ServiceReference<ContentHandler> ref :
-                    subsystem.getBundleContext().getServiceReferences(ContentHandler.class,
-                    "(" + ContentHandler.CONTENT_TYPE_PROPERTY + "=" + type + ")")) {
-                return subsystem.getBundleContext().getService(ref); // TODO unget when the coordination ends
-            }
-        } catch (InvalidSyntaxException e) {
-            // TODO log
-        }
-        return null;
-    }
 
     protected final Coordination coordination;
 	protected final BasicSubsystem provisionTo;

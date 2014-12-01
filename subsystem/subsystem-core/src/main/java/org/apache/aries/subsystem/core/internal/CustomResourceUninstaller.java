@@ -13,28 +13,22 @@
  */
 package org.apache.aries.subsystem.core.internal;
 
-import java.io.InputStream;
-
 import org.apache.aries.subsystem.ContentHandler;
 import org.osgi.resource.Resource;
-import org.osgi.service.coordinator.Coordination;
-import org.osgi.service.repository.RepositoryContent;
 
-public class CustomResourceInstaller extends ResourceInstaller {
+public class CustomResourceUninstaller extends ResourceUninstaller {
     private final ContentHandler handler;
     private final String type;
 
-    public CustomResourceInstaller(Coordination coordination, Resource resource, String type, BasicSubsystem subsystem, ContentHandler handler) {
-        super(coordination, resource, subsystem);
+    public CustomResourceUninstaller(Resource resource, String type, BasicSubsystem subsystem, ContentHandler handler) {
+        super(resource, subsystem);
         this.handler = handler;
         this.type = type;
     }
 
     @Override
-    public Resource install() throws Exception {
-        InputStream is = ((RepositoryContent) resource).getContent();
-        handler.install(is, ResourceHelper.getSymbolicNameAttribute(resource), type, subsystem, coordination);
-        addReference(resource);
-        return resource;
+    public void uninstall() {
+        removeReference();
+        handler.uninstall(ResourceHelper.getSymbolicNameAttribute(resource), type, subsystem);
     }
 }
