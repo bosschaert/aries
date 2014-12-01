@@ -523,6 +523,51 @@
                     </execution>
 
                     <execution>
+                        <id>custom-content-bundleB</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestFile>src/test/bundles/customContentBundleB/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                            <outputDirectory>${project.build.directory}/test-classes/customContent1</outputDirectory>
+                            <finalName>customContentBundleB</finalName>
+                        </configuration>
+                        <phase>process-test-classes</phase>
+                    </execution>
+
+                    <execution>
+                        <id>custom-content-bundleC</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestFile>src/test/bundles/customContentBundleC/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                            <outputDirectory>${project.build.directory}/test-classes/customContent2</outputDirectory>
+                            <finalName>customContentBundleC</finalName>
+                        </configuration>
+                        <phase>process-test-classes</phase>
+                    </execution>
+
+                    <execution>
+                        <id>custom-content-bundleD</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestFile>src/test/bundles/customContentBundleD/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                            <outputDirectory>${project.build.directory}/test-classes/customContent3</outputDirectory>
+                            <finalName>customContentBundleD</finalName>
+                        </configuration>
+                        <phase>process-test-classes</phase>
+                    </execution>
+
+                    <execution>
                         <id>dynamic-import-impl</id>
                         <goals>
                             <goal>jar</goal>
